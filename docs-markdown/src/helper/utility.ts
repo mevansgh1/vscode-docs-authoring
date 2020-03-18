@@ -186,7 +186,7 @@ export async function search(editor: TextEditor, selection: Selection, folderPat
                 }
                 break;
             case "range":
-                const range = await window.showInputBox({ prompt: "Enter line selection range" });
+                const range = await window.showInputBox({ prompt: "Enter line selecton range" });
                 if (range) {
                     snippet = snippetBuilder(language, snippetLink, undefined, range);
                     common.insertContentToEditor(editor, search.name, snippet, true, selectionRange);
@@ -299,12 +299,12 @@ export function stripBOMFromString(originalText: string) {
 /**
  * Create child process.
  */
-export function createChildProcess(path: any, args: any, options: any) {
+/* export function createChildProcess(path: any, args: any, options: any) {
     const spawn = require("child-process-promise").spawn;
     const promise = spawn(path, args, options);
     const childProcess = promise.childProcess;
     return childProcess;
-}
+} */
 
 interface IExpressionReplacementPair {
     expression: RegExp;

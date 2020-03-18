@@ -5,7 +5,7 @@ import * as dir from "node-dir";
 import { homedir } from "os";
 import { basename, extname, join, relative } from "path";
 import { Uri, window, workspace, WorkspaceFolder } from "vscode";
-import YAML = require("yamljs");
+import * as YAML from "yamljs";
 import { output } from "../extension";
 import { generateTimestamp, naturalLanguageCompare, postError, postWarning, sendTelemetryData, tryFindFile } from "../helper/common";
 import * as yamlMetadata from "../helper/yaml-metadata";

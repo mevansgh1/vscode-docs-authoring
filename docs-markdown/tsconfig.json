@@ -13,11 +13,14 @@
             "es2017"
         ],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "moduleResolution": "node"
     },
     "include": [
         "src/**/*",
-        "test/**/*"
+        "test/**/*",
+        "./node_modules/vscode/vscode.d.ts",
+        "./node_modules/vscode/lib/*"
     ],
     "exclude": [
         ".vscode-test"
