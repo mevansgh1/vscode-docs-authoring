@@ -3,10 +3,8 @@
 import * as fs from "fs";
 import * as path from "path";
 
-import { commands, TextEditor, window, workspace } from "vscode";
-import { noActiveEditorMessage, tryFindFile } from "../helper/common";
-import { sendTelemetryData } from "../helper/telemetry";
-import { applyReplacements, findReplacement, Replacements } from "../helper/utility";
+import { commands, Selection, TextEditor, window, workspace } from "vscode";
+import { isMarkdownFileCheck, noActiveEditorMessage, sendTelemetryData, tryFindFile } from "../helper/common";
 
 export function insertMetadataCommands() {
     return [
@@ -49,6 +47,13 @@ type MetadataType =
     "ms.service" |
     "ms.subservice";
 
+interface IReplacement {
+    selection: Selection;
+    value: string;
+}
+
+type Replacements = IReplacement[];
+
 class ReplacementFormat {
     constructor(
         readonly type: MetadataType,
@@ -85,8 +90,7 @@ export async function updateImplicitMetadataValues() {
         return;
     }
 
-    if (editor.document.languageId !== "markdown" &&
-        editor.document.languageId !== "yaml") {
+    if (!isMarkdownFileCheck(editor, false)) {
         return;
     }
 
@@ -99,7 +103,7 @@ export async function updateImplicitMetadataValues() {
                 const replacementFormat = replacementFormats[i];
                 if (replacementFormat) {
                     const expression = metadataExpressions.get(replacementFormat.type);
-                    const replacement = findReplacement(editor.document, content, replacementFormat.toReplacementString(), expression);
+                    const replacement = findReplacement(editor, content, replacementFormat.toReplacementString(), expression);
                     if (replacement) {
                         replacements.push(replacement);
                     }
@@ -109,6 +113,34 @@ export async function updateImplicitMetadataValues() {
             await applyReplacements(replacements, editor);
             await saveAndSendTelemetry();
         }
+    }
+}
+
+function findReplacement(editor: TextEditor, content: string, value: string, expression?: RegExp): IReplacement | undefined {
+    const result = expression ? expression.exec(content) : null;
+    if (result !== null && result.length) {
+        const match = result[0];
+        if (match && match != value) {
+            const index = result.index;
+            const startPosition = editor.document.positionAt(index);
+            const endPosition = editor.document.positionAt(index + match.length);
+            const selection = new Selection(startPosition, endPosition);
+
+            return { selection, value };
+        }
+    }
+
+    return undefined;
+}
+
+async function applyReplacements(replacements: Replacements, editor: TextEditor) {
+    if (replacements) {
+        await editor.edit((builder) => {
+            replacements.forEach((replacement) =>
+                builder.replace(
+                    replacement.selection,
+                    replacement.value));
+        });
     }
 }
 
@@ -194,27 +226,40 @@ function getReplacementValue(globs: { [glob: string]: string }, fsPath: string):
     return undefined;
 }
 
-export async function updateMetadataDate() {
+export async function updateMetadataDate(nag?: Boolean) {
     const editor = window.activeTextEditor;
+    let updateDate = true;
     if (!editor) {
         noActiveEditorMessage();
         return;
     }
 
-    if (editor.document.languageId !== "markdown" &&
-        editor.document.languageId !== "yaml") {
+    if (!isMarkdownFileCheck(editor, false)) {
         return;
     }
 
     const content = editor.document.getText();
     if (content) {
-        const replacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
+        const replacement = findReplacement(editor, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
         if (replacement) {
-            await applyReplacements([replacement], editor);
-            await saveAndSendTelemetry();
+            if (nag === true) {
+                let syncDate = await synchDate()
+                    .then(function (result) {
+                        return result;
+                    });
+                if (syncDate === undefined) {
+                    updateDate = false;
+                }
+            }
+            if (updateDate === true) {
+                await applyReplacements([replacement], editor);
+                await saveAndSendTelemetry();
+            }
         }
     }
+    return updateDate;
 }
+
 
 async function saveAndSendTelemetry() {
     await commands.executeCommand("workbench.action.files.save");
@@ -231,4 +276,11 @@ function toShortDate(date: Date) {
     const dayStr = day.length > 1 ? day : `0${day}`;
 
     return `${monthStr}/${dayStr}/${year}`;
+}
+
+async function synchDate() {
+    return await window.showInputBox({
+        placeHolder: "Today's date: " + toShortDate(new Date()), prompt: 'Update date?'
+    });
+
 }

@@ -6,7 +6,8 @@
  Logging, Error Handling, VS Code window updates, etc.
 */
 
-import { CancellationToken, commands, CompletionItem, DocumentLink, ExtensionContext, languages, TextDocument, Uri, window, workspace } from "vscode";
+import { CancellationToken, commands, CompletionItem, ConfigurationTarget, Disposable, ExtensionContext, languages, TextDocument, TextDocumentSaveReason, TextDocumentWillSaveEvent, window, workspace, Uri } from "vscode";
+import * as vscode from "vscode";
 import { insertAlertCommand } from "./controllers/alert-controller";
 import { boldFormattingCommand } from "./controllers/bold-controller";
 import { applyCleanupCommand, applyCleanupFile, applyCleanupFolder } from "./controllers/cleanup/cleanup-controller";
@@ -14,27 +15,28 @@ import { codeFormattingCommand } from "./controllers/code-controller";
 import { insertImageCommand } from "./controllers/image-controller";
 import { insertIncludeCommand } from "./controllers/include-controller";
 import { italicFormattingCommand } from "./controllers/italic-controller";
+import { addFrontMatterTitle } from "./controllers/lint-config-controller";
 import { insertListsCommands } from "./controllers/list-controller";
 import { getMasterRedirectionCommand } from "./controllers/master-redirect-controller";
 import { insertLinksAndMediaCommands } from "./controllers/media-controller";
 import { insertMetadataCommands } from "./controllers/metadata-controller";
+import { updateMetadataDate } from "./controllers/metadata-controller";
 import { noLocCompletionItemsMarkdown, noLocCompletionItemsMarkdownYamlHeader, noLocCompletionItemsYaml, noLocTextCommand } from "./controllers/no-loc-controller";
 import { previewTopicCommand } from "./controllers/preview-controller";
 import { quickPickMenuCommand } from "./controllers/quick-pick-menu-controller";
 import { insertRowsAndColumnsCommand } from "./controllers/row-columns-controller";
 import { insertSnippetCommand } from "./controllers/snippet-controller";
-import { insertSortSelectionCommands } from "./controllers/sort-controller";
 import { insertTableCommand } from "./controllers/table-controller";
 import { applyXrefCommand } from "./controllers/xref-controller";
 import { yamlCommands } from "./controllers/yaml-controller";
 import { checkExtension, extractDocumentLink, generateTimestamp, matchAll, noActiveEditorMessage } from "./helper/common";
 import { insertLanguageCommands, markdownCodeActionProvider, markdownCompletionItemsProvider } from "./helper/highlight-langs";
-import { output } from "./helper/output";
 import { Reporter } from "./helper/telemetry";
 import { UiHelper } from "./helper/ui";
-import { findAndReplaceTargetExpressions } from "./helper/utility";
 import { isCursorInsideYamlHeader } from "./helper/yaml-metadata";
+import { insertSortSelectionCommands } from "./controllers/sort-controller";
 
+export const output = window.createOutputChannel("docs-markdown");
 export let extensionPath: string;
 
 /**
@@ -56,6 +58,31 @@ export function activate(context: ExtensionContext) {
 
     // check for docs extensions
     installedExtensionsCheck();
+
+    // Markdownlint custom rule check
+    checkMarkdownlintCustomProperty();
+
+    // Update markdownlint.config to fix MD025 issue
+    addFrontMatterTitle();
+
+    //
+    let willSaveTextDocumentListener: Disposable;
+    willSaveTextDocumentListener = workspace.onWillSaveTextDocument(willSaveTextDocument);
+
+    async function willSaveTextDocument(e: TextDocumentWillSaveEvent) {
+        const nagForUpdates = workspace.getConfiguration('markdown').nagForUpdates;
+        if (nagForUpdates === false) {
+            return;
+        }
+        let dateUpdated = await updateMetadataDate(true);
+        let autoSave = e.reason !== TextDocumentSaveReason.Manual;
+        // handle auto save:
+        // disable the nag when auto save is enabled and the user declines the first request for update,
+        // otherwise auto update the ms.date when it's not up-to-date.
+        if (dateUpdated === false && autoSave === true) {
+            willSaveTextDocumentListener.dispose();
+        }
+    }
 
     // Creates an array of commands from each command file.
     const AuthoringCommands: any = [];
@@ -82,11 +109,11 @@ export function activate(context: ExtensionContext) {
     insertLanguageCommands().forEach((cmd) => AuthoringCommands.push(cmd));
     // Autocomplete
     context.subscriptions.push(setupAutoComplete());
-    languages.registerDocumentLinkProvider({ language: "markdown" }, {
+    vscode.languages.registerDocumentLinkProvider({ language: "markdown" }, {
         provideDocumentLinks(document: TextDocument, token: CancellationToken) {
             const IMAGE_SOURCE_RE = /source="(.*?)"/gm;
             const text = document.getText();
-            const results: DocumentLink[] = [];
+            const results: vscode.DocumentLink[] = [];
             for (const match of matchAll(IMAGE_SOURCE_RE, text)) {
                 const matchLink = extractDocumentLink(document, match[1], match.index);
                 if (matchLink) {
@@ -97,23 +124,20 @@ export function activate(context: ExtensionContext) {
         },
     });
 
-    languages.registerCompletionItemProvider("markdown", markdownCompletionItemsProvider, "`");
-    languages.registerCodeActionsProvider("markdown", markdownCodeActionProvider);
-
-    // When the document changes, find and replace target expressions (for example, smart quotes).
-    workspace.onDidChangeTextDocument(findAndReplaceTargetExpressions);
+    vscode.languages.registerCompletionItemProvider("markdown", markdownCompletionItemsProvider, "`");
+    vscode.languages.registerCodeActionsProvider("markdown", markdownCodeActionProvider);
 
     // Telemetry
     context.subscriptions.push(new Reporter(context));
 
     // Attempts the registration of commands with VS Code and then add them to the extension context.
     try {
-        commands.registerCommand("cleanupFile", async (uri: Uri) => {
+        vscode.commands.registerCommand('cleanupFile', async (uri: Uri) => {
             await applyCleanupFile(uri);
-        });
-        commands.registerCommand("cleanupInFolder", async (uri: Uri) => {
+        })
+        vscode.commands.registerCommand('cleanupInFolder', async (uri: Uri) => {
             await applyCleanupFolder(uri);
-        });
+        })
         AuthoringCommands.map((cmd: any) => {
             const commandName = cmd.command;
             const command = commands.registerCommand(commandName, cmd.callback);
@@ -127,7 +151,9 @@ export function activate(context: ExtensionContext) {
 
     // if the user changes markdown.showToolbar in settings.json, display message telling them to reload.
     workspace.onDidChangeConfiguration((e: any) => {
+
         if (e.affectsConfiguration("markdown.showToolbar")) {
+
             window.showInformationMessage("Your updated configuration has been recorded, but you must reload to see its effects.", "Reload")
                 .then((res) => {
                     if (res === "Reload") {
@@ -136,6 +162,7 @@ export function activate(context: ExtensionContext) {
                 });
         }
     });
+
 }
 
 export function installedExtensionsCheck() {
@@ -150,6 +177,46 @@ export function installedExtensionsCheck() {
         const inactiveMessage = `[${msTimeValue}] - The ${friendlyName} extension is not installed.`;
         checkExtension(extensionName, inactiveMessage);
     });
+}
+
+/**
+ * Method to check for the docs custom markdownlint value.
+ * Checks for markdownlint.customRules property.  If markdownlint isn't installed, do nothing.  If markdownlint is installed, check for custom property values.
+ */
+export function checkMarkdownlintCustomProperty() {
+    const { msTimeValue } = generateTimestamp();
+    const customProperty = "markdownlint.customRules";
+    const customRuleset = "{docsmsft.docs-markdown}/markdownlint-custom-rules/rules.js";
+    const customPropertyData: any = workspace.getConfiguration().inspect(customProperty);
+    // new list for string comparison and updating.
+    const existingUserSettings: string[] = [];
+    if (customPropertyData) {
+        // if the markdownlint.customRules property exists, pull the global values (user settings) into a string.
+        if (customPropertyData.globalValue) {
+            const valuesToString = customPropertyData.globalValue.toString();
+            const individualValues = valuesToString.split(",");
+            individualValues.forEach((setting: string) => {
+                existingUserSettings.push(setting);
+            });
+            // if the customRuleset already exist, write a notification to the output window and continue.
+            if (existingUserSettings.indexOf(customRuleset) > -1) {
+                output.appendLine(`[${msTimeValue}] - Docs custom markdownlint ruleset is already set at a global level.`);
+            } else {
+                // if the customRuleset does not exists, append it to the other values in the list if there are any or add it as the only value.
+                existingUserSettings.push(customRuleset);
+                // update the user settings with new/updated values and notify user.
+                // if a user has specific workspace settings for customRules, vscode will use those. this is done so we don't override non-docs repos.
+                workspace.getConfiguration().update(customProperty, existingUserSettings, ConfigurationTarget.Global);
+                output.appendLine(`[${msTimeValue}] - Docs custom markdownlint ruleset added to user settings.`);
+            }
+        }
+        // if no custom rules exist, create array and add docs custom ruleset.
+        if (customPropertyData.globalValue === undefined) {
+            const customPropertyValue = [customRuleset];
+            workspace.getConfiguration().update(customProperty, customPropertyValue, ConfigurationTarget.Global);
+            output.appendLine(`[${msTimeValue}] - Docs custom markdownlint ruleset added to user settings.`);
+        }
+    }
 }
 
 function setupAutoComplete() {
@@ -182,6 +249,13 @@ function setupAutoComplete() {
             }
         },
     });
+}
+
+function willSaveTextDocument(e: TextDocumentWillSaveEvent) {
+    //let config = workspace.getConfiguration('tslint', e.document.uri);
+    //let autoFix = config.get('autoFixOnSave', false);
+    let document = e.document;
+    e.waitUntil(updateMetadataDate(true));
 }
 
 // this method is called when your extension is deactivated
