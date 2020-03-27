@@ -6,7 +6,7 @@
  Logging, Error Handling, VS Code window updates, etc.
 */
 
-import { CancellationToken, commands, CompletionItem, DocumentLink, ExtensionContext, languages, TextDocument, Uri, window, workspace } from "vscode";
+import { CancellationToken, commands, CompletionItem, Disposable, DocumentLink, ExtensionContext, languages, TextDocument, TextDocumentSaveReason, TextDocumentWillSaveEvent, Uri, window, workspace } from "vscode";
 import { insertAlertCommand } from "./controllers/alert-controller";
 import { insertMonikerCommand } from "./controllers/moniker-controller";
 import { boldFormattingCommand } from "./controllers/bold-controller";
@@ -35,6 +35,7 @@ import { Reporter } from "./helper/telemetry";
 import { UiHelper } from "./helper/ui";
 import { findAndReplaceTargetExpressions } from "./helper/utility";
 import { isCursorInsideYamlHeader } from "./helper/yaml-metadata";
+import { updateMetadataDate } from "./controllers/metadata-controller";
 
 export let extensionPath: string;
 
@@ -57,6 +58,21 @@ export function activate(context: ExtensionContext) {
 
     // check for docs extensions
     installedExtensionsCheck();
+
+    // create an event listener to make pre-save metadata edits
+    let willSaveTextDocumentListener: Disposable;
+    willSaveTextDocumentListener = workspace.onWillSaveTextDocument(willSaveTextDocument);
+    context.subscriptions.push(willSaveTextDocumentListener);
+
+    async function willSaveTextDocument(e: TextDocumentWillSaveEvent) {
+        if (workspace.getConfiguration('markdown').metadataNag === true) {
+            let autoSave = e.reason !== TextDocumentSaveReason.Manual;
+            let dateUpdated = await updateMetadataDate(true);
+            if (autoSave === true && dateUpdated === false) {
+                willSaveTextDocumentListener.dispose();
+            }
+         }
+    }
 
     // Creates an array of commands from each command file.
     const AuthoringCommands: any = [];
