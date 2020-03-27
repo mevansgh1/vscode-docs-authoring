@@ -436,7 +436,7 @@ export function findReplacement(document: TextDocument, content: string, value: 
     const result = expression ? expression.exec(content) : null;
     if (result !== null && result.length) {
         const match = result[0];
-        if (match) {
+        if (match && match !== value) {
             const index = result.index;
             const startPosition = document.positionAt(index);
             const endPosition = document.positionAt(index + match.length);

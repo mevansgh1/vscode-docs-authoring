@@ -639,6 +639,11 @@
           "type": "boolean",
           "default": false,
           "description": "When enabled, beta features will become available."
+        },
+        "markdown.metadataNag": {
+          "type": "boolean",
+          "default": false,
+          "description": "On save prompt to update ms.date if it's not up-to-date"
         }
       }
     },
@@ -733,6 +738,7 @@
     "@types/node": "^12.12.32",
     "@types/node-dir": "0.0.32",
     "@types/recursive-readdir": "^2.2.0",
+    "@types/uuid": "^7.0.2",
     "@types/vscode": "^1.43.0",
     "@types/yamljs": "^0.2.30",
     "chai": "^4.2.0",
@@ -747,7 +753,7 @@
     "ts-node": "^8.8.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.5",
-    "vscode-test": "^1.3.0"
+    "vscode-test": "^1.3.0" 
   },
   "license": "MIT"
 }

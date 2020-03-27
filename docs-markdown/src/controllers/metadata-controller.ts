@@ -195,8 +195,9 @@ function getReplacementValue(globs: { [glob: string]: string }, fsPath: string):
     return undefined;
 }
 
-export async function updateMetadataDate() {
+export async function updateMetadataDate(nag?: Boolean) {
     const editor = window.activeTextEditor;
+    let updateDate = true;
     if (!editor) {
         noActiveEditorMessage();
         return;
@@ -211,10 +212,19 @@ export async function updateMetadataDate() {
     if (content) {
         const replacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
         if (replacement) {
-            await applyReplacements([replacement], editor);
-            await saveAndSendTelemetry();
+            if (nag === true) {
+                let syncDate = await window.showInformationMessage("Would you like to update ms.date to today's date?", "Update");
+                if (syncDate === undefined) {
+                    updateDate = false;
+                }
+            }
+            if (updateDate === true) {
+                await applyReplacements([replacement], editor);
+                await saveAndSendTelemetry();
+            }
         }
     }
+    return updateDate;
 }
 
 async function saveAndSendTelemetry() {
@@ -224,7 +234,7 @@ async function saveAndSendTelemetry() {
     sendTelemetryData(telemetryCommand, updateMetadataDate.name);
 }
 
-function toShortDate(date: Date) {
+export function toShortDate(date: Date) {
     const year = date.getFullYear();
     const month = (1 + date.getMonth()).toString();
     const monthStr = month.length > 1 ? month : `0${month}`;
@@ -233,3 +243,4 @@ function toShortDate(date: Date) {
 
     return `${monthStr}/${dayStr}/${year}`;
 }
+
