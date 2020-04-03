@@ -1,16 +1,17 @@
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
-import { commands, EventEmitter, TextDocumentSaveReason, TextDocumentWillSaveEvent, window, workspace, WorkspaceEdit, extensions, } from "vscode";
+//import { commands, EventEmitter, TextDocumentSaveReason, TextDocumentWillSaveEvent, window, workspace, WorkspaceEdit, extensions, } from "vscode";
+import { commands, window } from "vscode";
 import { deactivate, installedExtensionsCheck } from "../../extension";
 import * as metadata from "../../controllers/metadata-controller";
 import * as chai from "chai";
 import * as spies from "chai-spies";
 import * as assert from "assert";
-import { CreateDocumentAndSetMetadata, deleteFile } from "../test.common/common";
+//import { CreateDocumentAndSetMetadata, deleteFile } from "../test.common/common";
 
 chai.use(spies);
-const expect = chai.expect;
+//const expect = chai.expect;
 const sinon = require("sinon");
 
 suite("Extension Test Suite", () => {
@@ -32,7 +33,7 @@ suite("Extension Test Suite", () => {
 		assert.equal(-1, [1, 2, 3].indexOf(5));
 		assert.equal(-1, [1, 2, 3].indexOf(0));
 
-	});
+	});/*
 	test('metadataNag is false', async () => {
 		let config = workspace.getConfiguration('markdown');
 		await config.update('metadataNag', false, false);

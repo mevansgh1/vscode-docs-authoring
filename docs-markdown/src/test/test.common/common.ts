@@ -1,8 +1,7 @@
-import { workspace, window, Uri, commands, Position, WorkspaceEdit } from "vscode";
-import { resolve } from "path";
-import { noActiveEditorMessage } from "../../helper/common"
-import { v4 as uuid } from 'uuid';
-import * as path from 'path';
+import * as path from "path";
+import { v4 as uuid } from "uuid";
+import { commands, Position, Uri, window, workspace, WorkspaceEdit } from "vscode";
+import { noActiveEditorMessage } from "../../helper/common";
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((r) => {
@@ -17,46 +16,42 @@ export async function loadDocumentAndGetItReady(filePath: string) {
 }
 
 export async function openTestRepository() {
-    const filePath = resolve(__dirname, "../../../../src/test/data/repo");
+    const filePath = path.resolve(__dirname, "../../../../src/test/data/repo");
     const repoUri = Uri.file(filePath);
-    await commands.executeCommand('vscode.openFolder', repoUri);
+    await commands.executeCommand("vscode.openFolder", repoUri);
 }
 
 export async function createDocumentAndGetItReady() {
-    await commands.executeCommand('workbench.action.files.newUntitledFile');
+    await commands.executeCommand("workbench.action.files.newUntitledFile");
 }
 
 export async function CreateDocumentAndSetMetadata() {
     const fileName = path.join(`${workspace.rootPath}`, `${uuid()}.md`);
     const newFile = Uri.parse('untitled:' + fileName);
-    await workspace.openTextDocument(newFile).then(document => {
+    workspace.openTextDocument(newFile).then(document => {
         const edit = new WorkspaceEdit();
-        edit.insert(newFile, new Position(0, 0), 'ms.date: 01/01/2020');
-        return workspace.applyEdit(edit).then(async success => {
+        edit.insert(newFile, new Position(0, 0), "Hello world!");
+        return workspace.applyEdit(edit).then(success => {
             if (success) {
-                await window.showTextDocument(document);
-                await commands.executeCommand('workbench.action.files.save');
-                return fileName;
+                window.showTextDocument(document);
             } else {
-                await window.showInformationMessage('Error!');
+                window.showInformationMessage('Error!');
             }
         });
     });
-    return fileName;
 }
 
-export async function deleteFile(path: string) {
+export async function deleteFile(file: string) {
     // attempt to offset concurrent calls to prevent files from not getting deleted
-    let offset = Math.floor(Math.random() * (100 - 25 + 1)) + 25;
+    const offset = Math.floor(Math.random() * (100 - 25 + 1)) + 25;
     await sleep(offset);
-    let uri = Uri.parse(path);
+    const uri = Uri.parse(file);
     workspace.fs.delete(uri);
 }
 
 export async function getMsDate(filePath: string) {
     const docUri = Uri.file(filePath);
     await workspace.openTextDocument(docUri);
-    //await window.showTextDocument(document);
     const editor = window.activeTextEditor;
     const msDateRegex = /ms.date:\s*\b(.+?)$/mi;
     if (!editor) {

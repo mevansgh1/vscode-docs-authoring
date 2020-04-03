@@ -383,8 +383,9 @@ export async function findAndReplaceTargetExpressions(event: TextDocumentChangeE
                         }
                     }
                 });
-
-                await applyReplacements(replacements, editor);
+                if (replacements.length > 0) {
+                    await applyReplacements(replacements, editor);
+                }
             }
         }
     }

@@ -78,6 +78,8 @@ const metadataExpressions: Map<MetadataType, RegExp> = new Map([
     ["ms.subservice", msSubserviceRegex],
 ]);
 
+const naggedFiles: string[] = [];
+
 export async function updateImplicitMetadataValues() {
     const editor = window.activeTextEditor;
     if (!editor) {
@@ -195,9 +197,45 @@ function getReplacementValue(globs: { [glob: string]: string }, fsPath: string):
     return undefined;
 }
 
-export async function updateMetadataDate(nag?: Boolean) {
+export async function nagToUpdateMetaData() {
+   if (workspace.getConfiguration("markdown").metadataNag === true) {
+        const editor = window.activeTextEditor;
+        if (!editor) {
+            noActiveEditorMessage();
+            return;
+        }
+
+        if (editor.document.languageId !== "markdown" &&
+            editor.document.languageId !== "yaml") {
+            return;
+        }
+
+        const fileName = editor.document.fileName;
+        // don't nag files that have already been nagged
+        if (naggedFiles.indexOf(fileName) > -1 === true) {
+            return;
+        }
+
+        naggedFiles.push(fileName);
+
+        const content = editor.document.getText();
+        if (content) {
+            const msdateReplacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
+            if (msdateReplacement) {
+                const syncDate = await window.showInformationMessage("Would you like to update ms.date to today's date?", "Update");
+                if (syncDate !== undefined) {
+                    await applyReplacements([msdateReplacement], editor);
+                    let foo = "bar";
+                    await saveAndSendTelemetry();
+                    // await updateMetadataDate();
+                }
+            }
+        }
+    }
+}
+
+export async function updateMetadataDate() {
     const editor = window.activeTextEditor;
-    let updateDate = true;
     if (!editor) {
         noActiveEditorMessage();
         return;
@@ -212,19 +250,10 @@ export async function updateMetadataDate(nag?: Boolean) {
     if (content) {
         const replacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
         if (replacement) {
-            if (nag === true) {
-                let syncDate = await window.showInformationMessage("Would you like to update ms.date to today's date?", "Update");
-                if (syncDate === undefined) {
-                    updateDate = false;
-                }
-            }
-            if (updateDate === true) {
-                await applyReplacements([replacement], editor);
-                await saveAndSendTelemetry();
-            }
+            await applyReplacements([replacement], editor);
+            await saveAndSendTelemetry();
         }
     }
-    return updateDate;
 }
 
 async function saveAndSendTelemetry() {

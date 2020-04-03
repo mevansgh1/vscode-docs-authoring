@@ -6,7 +6,7 @@
  Logging, Error Handling, VS Code window updates, etc.
 */
 
-import { CancellationToken, commands, CompletionItem, Disposable, DocumentLink, ExtensionContext, languages, TextDocument, TextDocumentSaveReason, TextDocumentWillSaveEvent, Uri, window, workspace } from "vscode";
+import { CancellationToken, commands, CompletionItem, Disposable, DocumentLink, ExtensionContext, languages, TextDocument, TextDocumentWillSaveEvent, Uri, window, workspace } from "vscode";
 import { insertAlertCommand } from "./controllers/alert-controller";
 import { insertMonikerCommand } from "./controllers/moniker-controller";
 import { boldFormattingCommand } from "./controllers/bold-controller";
@@ -17,7 +17,7 @@ import { insertIncludeCommand } from "./controllers/include-controller";
 import { italicFormattingCommand } from "./controllers/italic-controller";
 import { insertListsCommands } from "./controllers/list-controller";
 import { insertLinksAndMediaCommands } from "./controllers/media-controller";
-import { insertMetadataCommands } from "./controllers/metadata-controller";
+import { insertMetadataCommands, nagToUpdateMetaData } from "./controllers/metadata-controller";
 import { noLocCompletionItemsMarkdown, noLocCompletionItemsMarkdownYamlHeader, noLocCompletionItemsYaml, noLocTextCommand } from "./controllers/no-loc-controller";
 import { previewTopicCommand } from "./controllers/preview-controller";
 import { quickPickMenuCommand } from "./controllers/quick-pick-menu-controller";
@@ -35,7 +35,6 @@ import { Reporter } from "./helper/telemetry";
 import { UiHelper } from "./helper/ui";
 import { findAndReplaceTargetExpressions } from "./helper/utility";
 import { isCursorInsideYamlHeader } from "./helper/yaml-metadata";
-import { updateMetadataDate } from "./controllers/metadata-controller";
 
 export let extensionPath: string;
 
@@ -65,13 +64,7 @@ export function activate(context: ExtensionContext) {
     context.subscriptions.push(willSaveTextDocumentListener);
 
     async function willSaveTextDocument(e: TextDocumentWillSaveEvent) {
-        if (workspace.getConfiguration('markdown').metadataNag === true) {
-            let autoSave = e.reason !== TextDocumentSaveReason.Manual;
-            let dateUpdated = await updateMetadataDate(true);
-            if (autoSave === true && dateUpdated === false) {
-                willSaveTextDocumentListener.dispose();
-            }
-         }
+        e.waitUntil(nagToUpdateMetaData());
     }
 
     // Creates an array of commands from each command file.
