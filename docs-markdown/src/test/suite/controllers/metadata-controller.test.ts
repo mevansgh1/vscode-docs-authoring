@@ -43,21 +43,21 @@ suite("Metadata Controller", () => {
     });*/
     test("syncDate === Update", async () => {
         const syncDate = "Update";
-        const spyOnUpdateMetadataDate = chai.spy.on(metadata, "updateMetadataDate");
+        let markdown = await CreateDocumentAndSetMetadata();
         const showInformationMessage = sinon.stub(window, "showInformationMessage");
+        showInformationMessage.resolves(syncDate);
+        await metadata.nagToUpdateMetaData();
+        //const spyOnUpdateMetadataDate = chai.spy.on(metadata, "updateMetadataDate");
         // const applyReplacements = sinon.stub(utility, "applyReplacements");
         // applyReplacements.resolves("");
-        showInformationMessage.resolves(syncDate);
-        let markdown = await CreateDocumentAndSetMetadata();
-        let foo = "bar";
-        await commands.executeCommand('workbench.action.files.save');
+        //await commands.executeCommand('workbench.action.files.save');
         // await loadDocumentAndGetItReady(markdown);
         //const filePath = resolve(__dirname, "../../../../../src/test/data/repo/articles/docs-markdown.md");
         //await commands.executeCommand("workbench.action.files.save");
         //metadata.nagToUpdateMetaData();
         //deleteFile(markdown);
         //assert.ok(showInformationMessage.called);
-        expect(spyOnUpdateMetadataDate).to.have.been.called();
+        //expect(spyOnUpdateMetadataDate).to.have.been.called();
     });
 
 

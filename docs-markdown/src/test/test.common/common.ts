@@ -27,18 +27,20 @@ export async function createDocumentAndGetItReady() {
 
 export async function CreateDocumentAndSetMetadata() {
     const fileName = path.join(`${workspace.rootPath}`, `${uuid()}.md`);
-    const newFile = Uri.parse('untitled:' + fileName);
-    workspace.openTextDocument(newFile).then(document => {
+    const newFile = Uri.parse("untitled:" + fileName);
+    await workspace.openTextDocument(newFile).then(document => {
         const edit = new WorkspaceEdit();
-        edit.insert(newFile, new Position(0, 0), "Hello world!");
-        return workspace.applyEdit(edit).then(success => {
+        edit.insert(newFile, new Position(0, 0), "ms.date: 01/01/2020");
+        return workspace.applyEdit(edit).then(async success => {
             if (success) {
-                window.showTextDocument(document);
+                await window.showTextDocument(document);
+                return fileName;
             } else {
-                window.showInformationMessage('Error!');
+                await window.showInformationMessage("Error!");
             }
         });
     });
+    return fileName;
 }
 
 export async function deleteFile(file: string) {
