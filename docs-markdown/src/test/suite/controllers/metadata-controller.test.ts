@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import * as chai from "chai";
 import * as spies from "chai-spies";
-import { commands, MessageItem, window, workspace } from "vscode";
+import { commands, MessageItem, window, workspace, TextEdit } from "vscode";
 import { nagToUpdateMetaData, toShortDate } from "../../../controllers/metadata-controller";
 import * as common from "../../../helper/common";
 import { createMarkdownAndSetMetadata, deleteFile, getMsDate } from "../../test.common/common";
@@ -26,6 +26,11 @@ suite("Metadata Controller", () => {
     suiteTeardown(async () => {
         await commands.executeCommand("workbench.action.closeAllEditors");
         // stub.restore();
+    });
+    test("noActiveEditorMessage", () => {
+        const spy = chai.spy.on(common, "noActiveEditorMessage");
+        nagToUpdateMetaData();
+        expect(spy).to.have.been.called();
     });
     test("nagToUpdateMetaData => update ms.date", async () => {
         const syncDate = "Update";
