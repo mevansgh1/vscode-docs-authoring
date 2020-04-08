@@ -25,22 +25,30 @@ export async function createDocumentAndGetItReady() {
     await commands.executeCommand("workbench.action.files.newUntitledFile");
 }
 
-export async function CreateDocumentAndSetMetadata() {
-    const fileName = path.join(`${workspace.rootPath}`, `${uuid()}.md`);
-    const newFile = Uri.parse("untitled:" + fileName);
-    await workspace.openTextDocument(newFile).then(document => {
-        const edit = new WorkspaceEdit();
-        edit.insert(newFile, new Position(0, 0), "ms.date: 01/01/2020");
-        return workspace.applyEdit(edit).then(async success => {
-            if (success) {
-                await window.showTextDocument(document);
-                return fileName;
-            } else {
-                await window.showInformationMessage("Error!");
-            }
-        });
+export async function createMarkdownAndSetMetadata() {
+    const filePath = path.join(`${workspace.rootPath}`, `${uuid()}.md`);
+    const docUri = Uri.parse("untitled:" + filePath);
+    const document = await workspace.openTextDocument(docUri);
+    const edit = new WorkspaceEdit();
+    const msdate = "01/01/2020";
+    const metadata =
+        "---\n" +
+        "ms.date: " + msdate + "\n" +
+        "---\n";
+    edit.insert(docUri, new Position(0, 0), metadata);
+    await workspace.applyEdit(edit).then(async success => {
+        if (success) {
+            await document.save().then(async saved => {
+                if (saved) {
+                    const doc = Uri.parse("file:" + filePath);
+                    await workspace.openTextDocument(doc).then(async openedDocument => {
+                        await window.showTextDocument(openedDocument);
+                    });
+                }
+            });
+        }
     });
-    return fileName;
+    return docUri;
 }
 
 export async function deleteFile(file: string) {

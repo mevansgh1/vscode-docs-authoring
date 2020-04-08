@@ -1,100 +1,97 @@
 import * as assert from "assert";
 import * as chai from "chai";
 import * as spies from "chai-spies";
-import { commands, window } from "vscode";
-import * as metadata from "../../../controllers/metadata-controller";
-import { updateMetadataDate } from "../../../controllers/metadata-controller";
+import { commands, MessageItem, window, workspace } from "vscode";
+import { nagToUpdateMetaData, toShortDate } from "../../../controllers/metadata-controller";
 import * as common from "../../../helper/common";
-//import * as telemetry from "../../../helper/telemetry";
-import * as utility from "../../../helper/utility";
-import { CreateDocumentAndSetMetadata, deleteFile, sleep, loadDocumentAndGetItReady } from "../../test.common/common";
-import { resolve } from "path";
+import { createMarkdownAndSetMetadata, deleteFile, getMsDate } from "../../test.common/common";
 
 chai.use(spies);
-
-const sinon = require("sinon");
 
 const expect = chai.expect;
 
 suite("Metadata Controller", () => {
+    const sinon = require("sinon");
+    let stub = sinon.stub();
+
+    suiteSetup(() => {
+        //stub = sinon.stub(workspace, "onWillSaveTextDocument");
+    });
     // Reset and tear down the spies
-    teardown(() => {
+    teardown(async () => {
+        await commands.executeCommand("workbench.action.closeAllEditors");
         chai.spy.restore(common);
-        sinon.restore();
+        //stub.restore();
     });
     suiteTeardown(async () => {
         await commands.executeCommand("workbench.action.closeAllEditors");
-    });/*
-    test("noActiveEditorMessage", async () => {
-        const spy = chai.spy.on(common, "noActiveEditorMessage");
-        await commands.executeCommand("workbench.action.closeAllEditors");
-        metadata.updateMetadataDate();
-        expect(spy).to.have.been.called();
-    });/*
-    test("syncDate === undefined", async () => {
-        const syncDate = undefined;
-        const spy = chai.spy.on(utility, "findReplacement");
-        const showInformationMessage = sinon.stub(window, "showInformationMessage");
-        showInformationMessage.resolves(syncDate);
-        const markdown = await CreateDocumentAndSetMetadata();
-        deleteFile(markdown);
-        assert.ok(showInformationMessage.calledOnce);
-        expect(spy).to.have.been.called();
-    });*/
-    test("syncDate === Update", async () => {
+        // stub.restore();
+    });
+    test("nagToUpdateMetaData => update ms.date", async () => {
         const syncDate = "Update";
-        let markdown = await CreateDocumentAndSetMetadata();
-        const showInformationMessage = sinon.stub(window, "showInformationMessage");
-        showInformationMessage.resolves(syncDate);
-        await metadata.nagToUpdateMetaData();
-        //const spyOnUpdateMetadataDate = chai.spy.on(metadata, "updateMetadataDate");
-        // const applyReplacements = sinon.stub(utility, "applyReplacements");
-        // applyReplacements.resolves("");
-        //await commands.executeCommand('workbench.action.files.save');
-        // await loadDocumentAndGetItReady(markdown);
-        //const filePath = resolve(__dirname, "../../../../../src/test/data/repo/articles/docs-markdown.md");
-        //await commands.executeCommand("workbench.action.files.save");
-        //metadata.nagToUpdateMetaData();
-        //deleteFile(markdown);
-        //assert.ok(showInformationMessage.called);
-        //expect(spyOnUpdateMetadataDate).to.have.been.called();
+        window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
+            return Promise.resolve(syncDate) as Thenable<any>;
+        });
+        const markdown = await createMarkdownAndSetMetadata();
+        const date = await getMsDate(markdown.fsPath);
+        await nagToUpdateMetaData();
+        const updatedDate = await getMsDate(markdown.fsPath);
+        deleteFile(markdown.fsPath);
+        assert.notEqual(date, updatedDate);
+        assert.equal("ms.date: " + toShortDate(new Date()), updatedDate);
     });
-
-
-    /*
-    test("sync date is true", async () => {
-        let syncDate = 'Update';
-        let markdown = await CreateDocumentAndSetMetadata();
-        let currMsdate = await getMsDate(markdown);
-        const spy = chai.spy.on(utility, "applyReplacements");
-        const showInformationMessage = sinon.stub(window, "showInformationMessage");
-        showInformationMessage.resolves(syncDate);
-        await updateMetadataDate(true);
-        assert.ok(showInformationMessage.calledOnce);
+    test("nagToUpdateMetaData => don't update ms.date", async () => {
+        const syncDate = undefined;
+        window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
+            return Promise.resolve(syncDate) as Thenable<any>;
+        });
+        const markdown = await createMarkdownAndSetMetadata();
+        const date = await getMsDate(markdown.fsPath);
+        await nagToUpdateMetaData();
+        const updatedDate = await getMsDate(markdown.fsPath);
+        deleteFile(markdown.fsPath);
+        assert.equal(date, updatedDate);
+        assert.notEqual("ms.date: " + toShortDate(new Date()), updatedDate);
+    });
+    test("nagToUpdateMetaData::don't nag to update ms.date", async () => {
+        const config = workspace.getConfiguration("markdown");
+        await config.update("metadataNag", false, false);
+        const updatedConfig = workspace.getConfiguration("markdown");
+        const metadataNag = await updatedConfig.get("metadataNag");
+        const spy = chai.spy.on(common, "noActiveEditorMessage");
+        await nagToUpdateMetaData();
+        assert.equal(metadataNag, false);
+        expect(spy).to.not.have.been.called();
+    });
+    test("nagToUpdateMetaData::nag to update ms.date", async () => {
+        const config = workspace.getConfiguration("markdown");
+        await config.update("metadataNag", true, false);
+        const updatedConfig = workspace.getConfiguration("markdown");
+        const metadataNag = await updatedConfig.get("metadataNag");
+        const spy = chai.spy.on(common, "noActiveEditorMessage");
+        await nagToUpdateMetaData();
+        assert.equal(metadataNag, true);
         expect(spy).to.have.been.called();
-        commands.executeCommand('workbench.action.files.save');
-        let updatedMsdate = await getMsDate(markdown);
-        //check to make sure the date was updated
-        assert.equal('ms.date: ' + toShortDate(new Date()), updatedMsdate);
-        assert.notEqual(currMsdate, updatedMsdate);
-        deleteFile(markdown);
     });
-    test("sync date is false", async () => {
-        let syncDate = undefined;
-        let markdown = await CreateDocumentAndSetMetadata();
-        let currMsdate = await getMsDate(markdown);
-        const spyOnApply = chai.spy.on(utility, "applyReplacements");
-        const showInformationMessage = sinon.stub(window, "showInformationMessage");
-        showInformationMessage.resolves(syncDate);
-        await updateMetadataDate(true);
-        assert.ok(showInformationMessage.calledOnce);
-        expect(spyOnApply).to.not.have.been.called();
-        commands.executeCommand('workbench.action.files.save');
-        let updatedMsdate = await getMsDate(markdown);
-        //check to make sure the date was NOT updated
-        assert.notEqual('ms.date: ' + toShortDate(new Date()), updatedMsdate);
-        assert.equal(currMsdate, updatedMsdate);
-        deleteFile(markdown);
-    });*/
-
+    test("nagToUpdateMetaData::don't nag saved files", async () => {
+        // disable date update
+        window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
+            return Promise.resolve(undefined) as Thenable<any>;
+        });
+        const markdown = await createMarkdownAndSetMetadata();
+        const expectedDate = "ms.date: 01/01/2020";
+        let actualDate = await getMsDate(markdown.fsPath);
+        await nagToUpdateMetaData();
+        // date should not have changed
+        assert.equal(expectedDate, actualDate);
+        // enable date update
+        window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
+            return Promise.resolve("Update") as Thenable<any>;
+        });
+        await nagToUpdateMetaData();
+        actualDate = await getMsDate(markdown.fsPath);
+        // since the file was already saved, the date still should not have changed.
+        assert.equal(expectedDate, actualDate);
+        deleteFile(markdown.fsPath);
+    });
 });

@@ -78,8 +78,6 @@ const metadataExpressions: Map<MetadataType, RegExp> = new Map([
     ["ms.subservice", msSubserviceRegex],
 ]);
 
-const naggedFiles: string[] = [];
-
 export async function updateImplicitMetadataValues() {
     const editor = window.activeTextEditor;
     if (!editor) {
@@ -197,39 +195,38 @@ function getReplacementValue(globs: { [glob: string]: string }, fsPath: string):
     return undefined;
 }
 
+const blacklist: string[] = [];
+
 export async function nagToUpdateMetaData() {
-   if (workspace.getConfiguration("markdown").metadataNag === true) {
-        const editor = window.activeTextEditor;
-        if (!editor) {
-            noActiveEditorMessage();
-            return;
-        }
+    if (workspace.getConfiguration("markdown").metadataNag === false) {
+        return;
+    }
+    const editor = window.activeTextEditor;
+    if (!editor) {
+        noActiveEditorMessage();
+        return;
+    }
 
-        if (editor.document.languageId !== "markdown" &&
-            editor.document.languageId !== "yaml") {
-            return;
-        }
+    if (editor.document.languageId !== "markdown" &&
+        editor.document.languageId !== "yaml") {
+        return;
+    }
 
-        const fileName = editor.document.fileName;
-        // don't nag files that have already been nagged
-        if (naggedFiles.indexOf(fileName) > -1 === true) {
-            return;
-        }
+    const fileName = editor.document.fileName;
+    // don't nag files that have already been nagged
+    if (blacklist.indexOf(fileName) > -1 === true) {
+        return;
+    }
 
-        naggedFiles.push(fileName);
-
-        const content = editor.document.getText();
-        if (content) {
-            const msdateReplacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
-            if (msdateReplacement) {
-                const syncDate = await window.showInformationMessage("Would you like to update ms.date to today's date?", "Update");
-                if (syncDate !== undefined) {
-                    await applyReplacements([msdateReplacement], editor);
-                    let foo = "bar";
-                    await saveAndSendTelemetry();
-                    // await updateMetadataDate();
-                }
+    const content = editor.document.getText();
+    if (content) {
+        const msdateReplacement = findReplacement(editor.document, content, `ms.date: ${toShortDate(new Date())}`, msDateRegex);
+        if (msdateReplacement) {
+            const syncDate = await window.showInformationMessage("Would you like to update ms.date to today's date?", "Update");
+            if (syncDate !== undefined) {
+                await updateMetadataDate();
             }
+            blacklist.push(fileName);
         }
     }
 }
