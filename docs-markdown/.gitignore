@@ -300,3 +300,6 @@ test-results-jest.xml
 test-results-mocha.xml
 
 .nyc_output/**/*
+
+#Test Data
+src/test/data/repo/includes/
