@@ -3,45 +3,22 @@
     "markdownEngineName": "markdig",
     "content": [
       {
-        "files": [
-          "**/*.md",
-          "**/*.yml"
-        ],
-        "exclude": [
-          "**/obj/**",
-          "**/includes/**",
-          "**/_themes/**"
-        ],
+        "files": ["**/*.md", "**/*.yml"],
+        "exclude": ["**/obj/**", "**/includes/**", "**/_themes/**"],
         "src": "articles",
         "dest": "."
       },
       {
-        "files": [
-          "**/*.md",
-          "**/*.yml"
-        ],
-        "exclude": [
-          "**/obj/**",
-          "**/includes/**",
-          "**/_themes/**"
-        ],
+        "files": ["**/*.md", "**/*.yml"],
+        "exclude": ["**/obj/**", "**/includes/**", "**/_themes/**"],
         "src": "bread",
         "dest": "bread"
       }
     ],
     "resource": [
       {
-        "files": [
-          "**/*.svg",
-          "**/*.png",
-          "**/*.jpg",
-          "**/*.jpeg",
-          "**/*.gif"
-        ],
-        "exclude": [
-          "**/obj/**",
-          "**/_themes/**"
-        ],
+        "files": ["**/*.svg", "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.gif"],
+        "exclude": ["**/obj/**", "**/_themes/**"],
         "src": "articles",
         "dest": "."
       },
@@ -53,10 +30,7 @@
           "includes/**/*.jpeg",
           "includes/**/*.gif"
         ],
-        "exclude": [
-          "**/obj/**",
-          "**/_themes/**"
-        ],
+        "exclude": ["**/obj/**", "**/_themes/**"],
         "src": null,
         "dest": null
       }
@@ -69,9 +43,7 @@
       "feedback_product_url": "https://feedback.azure.com/forums/34192--general-feedback",
       "breadcrumb_path": "/azure/bread/toc.json",
       "brand": "azure",
-      "searchScope": [
-        "Azure"
-      ],
+      "searchScope": ["Azure"],
       "recommendations": true,
       "contributors_to_exclude": [
         "PRmerger",
@@ -197,6 +169,7 @@
     },
     "fileMetadata": {
       "author": {
+        "articles/test/*.md": "bar",
         "articles/advisor/*.md": "saket-ms",
         "articles/connectors/*.md": "ecfan",
         "articles/batch/*.md": "ju-shim",
@@ -452,6 +425,7 @@
         "articles/firewall/**/*.md": "https://feedback.azure.com/forums/217313-networking?category_id=345022"
       },
       "manager": {
+        "articles/test/*.md": "bar",
         "articles/sql-database/**/*.md": "jroth",
         "articles/azure-functions/**/*.md": "gwallace",
         "articles/app-service/**/*.md": "gwallace",
@@ -465,8 +439,9 @@
         "articles/batch/**/*.md": "gwallace",
         "articles/virtual-machines/**/*.md": "gwallace",
         "articles/virtual-machine-scale-sets/**/*.md": "gwallace"
-   },
+      },
       "ms.author": {
+        "articles/test/*.md": "bar",
         "articles/advisor/*.md": "sagupt",
         "articles/connectors/*.md": "estfan",
         "articles/logic-apps/*.md": "estfan",
@@ -538,6 +513,7 @@
         "articles/aks/**/*.md": "mlearned"
       },
       "ms.service": {
+        "articles/test/*.md": "bar",
         "articles/connectors/*.md": "logic-apps",
         "articles/logic-apps/*.md": "logic-apps",
         "articles/governance/*.md": "governance",
@@ -577,6 +553,7 @@
         "articles/aks/**/*.md": "container-service"
       },
       "ms.subservice": {
+        "articles/test/*.md": "bar",
         "articles/industry/agriculture/**/*.md": "agriculture",
         "articles/azure-monitor/app/**/*.md": "application-insights",
         "articles/azure-monitor/log-query/**/.md": "logs",
@@ -612,55 +589,99 @@
         "articles/cognitive-services/Translator/**/*.md": "translator-text"
       },
       "searchScope": {
-        "articles/app-service/**/*.md": ["Azure","App Service"],
-        "articles/azure-app-configuration/**/*.md": ["Azure","AppConfig"],
-        "articles/azure-app-configuration/**/*.yml": ["Azure","AppConfig"],
-        "articles/azure-cache-for-redis/**/*.md": ["Azure","Cache for Redis"],
-        "articles/azure-cache-for-redis/**/*.yml": ["Azure","Cache for Redis"],
-        "articles/azure-databricks/**/*.md": ["Azure","Azure Databricks"],
-        "articles/azure-databricks/**/*.yml": ["Azure","Azure Databricks"],
-        "articles/billing/**/*.md": ["Azure","Cost Management","Billing"],
-        "articles/billing/**/*.yml": ["Azure","Cost Management","Billing"],
-        "articles/cost-management/**/*.md": ["Azure","Billing","Cost Management"],
-        "articles/cost-management/**/*.yml": ["Azure","Billing","Cost Management"],
-        "articles/cosmos-db/**/*.md": ["Azure","Azure Cosmos DB"],
-        "articles/cosmos-db/**/*.yml": ["Azure","Azure Cosmos DB"],
-        "articles/data-catalog/**/*.md": ["Azure","Azure Data Catalog"],
-        "articles/data-catalog/**/*.yml": ["Azure","Azure Data Catalog"],
-        "articles/data-explorer/**/*.md": ["Azure","Kusto","Azure Data Explorer"],
-        "articles/data-explorer/**/*.yml": ["Azure","Kusto","Azure Data Explorer"],
-        "articles/data-lake-analytics/**/*.md": ["Azure","Azure Data Lake Analytics"],
-        "articles/data-lake-analytics/**/*.yml": ["Azure","Azure Data Lake Analytics"],
-        "articles/data-share/**/*.md": ["Azure","Azure Data Share"],
-        "articles/data-share/**/*.yml": ["Azure","Azure Data Share"],
-        "articles/hdinsight/**/*.md": ["Azure","Azure HDInsight"],
-        "articles/hdinsight/**/*.yml": ["Azure","Azure HDInsight"],
-        "articles/mariadb/**/*.md": ["Azure","Azure Database for MariaDB"],
-        "articles/mariadb/**/*.yml": ["Azure","Azure Database for MariaDB"],
-        "articles/mysql/**/*.md": ["Azure","Azure Database for MySQL"],
-        "articles/mysql/**/*.yml": ["Azure","Azure Database for MySQL"],
-        "articles/notebooks/**/*.yml": ["Azure","Azure Notebooks"],
-        "articles/notebooks/**/*.md": ["Azure","Azure Notebooks"],
-        "articles/postgresql/**.md": ["Azure","Azure Database for PostgreSQL"],
-        "articles/postgresql/**.yml": ["Azure","Azure Database for PostgreSQL"],
-        "articles/stream-analytics/**/*.md": ["Azure","Stream Analytics"],
-        "articles/stream-analytics/**/*.yml": ["Azure","Stream Analytics"],
-        "articles/virtual-machine-scale-sets/**/*.yml": ["Azure","Virtual Machine Scale Sets"],
-        "articles/virtual-machines/**/*.yml": ["Azure","Virtual Machines"],
-        "articles/virtual-machines/linux/**/*.yml": ["Azure","Linux Virtual Machines"],
-        "articles/virtual-machines/windows/**/*.yml": ["Azure","Windows Virtual Machines"],
-        "articles/virtual-machine-scale-sets/**/*.md": ["Azure","Virtual Machine Scale Sets"],
-        "articles/virtual-machines/**/*.md": ["Azure","Virtual Machines"],
-        "articles/virtual-machines/linux/**/*.md": ["Azure","Linux Virtual Machines"],
-        "articles/virtual-machines/windows/**/*.md": ["Azure","Windows Virtual Machines"]
+        "articles/app-service/**/*.md": ["Azure", "App Service"],
+        "articles/azure-app-configuration/**/*.md": ["Azure", "AppConfig"],
+        "articles/azure-app-configuration/**/*.yml": ["Azure", "AppConfig"],
+        "articles/azure-cache-for-redis/**/*.md": ["Azure", "Cache for Redis"],
+        "articles/azure-cache-for-redis/**/*.yml": ["Azure", "Cache for Redis"],
+        "articles/azure-databricks/**/*.md": ["Azure", "Azure Databricks"],
+        "articles/azure-databricks/**/*.yml": ["Azure", "Azure Databricks"],
+        "articles/billing/**/*.md": ["Azure", "Cost Management", "Billing"],
+        "articles/billing/**/*.yml": ["Azure", "Cost Management", "Billing"],
+        "articles/cost-management/**/*.md": [
+          "Azure",
+          "Billing",
+          "Cost Management"
+        ],
+        "articles/cost-management/**/*.yml": [
+          "Azure",
+          "Billing",
+          "Cost Management"
+        ],
+        "articles/cosmos-db/**/*.md": ["Azure", "Azure Cosmos DB"],
+        "articles/cosmos-db/**/*.yml": ["Azure", "Azure Cosmos DB"],
+        "articles/data-catalog/**/*.md": ["Azure", "Azure Data Catalog"],
+        "articles/data-catalog/**/*.yml": ["Azure", "Azure Data Catalog"],
+        "articles/data-explorer/**/*.md": [
+          "Azure",
+          "Kusto",
+          "Azure Data Explorer"
+        ],
+        "articles/data-explorer/**/*.yml": [
+          "Azure",
+          "Kusto",
+          "Azure Data Explorer"
+        ],
+        "articles/data-lake-analytics/**/*.md": [
+          "Azure",
+          "Azure Data Lake Analytics"
+        ],
+        "articles/data-lake-analytics/**/*.yml": [
+          "Azure",
+          "Azure Data Lake Analytics"
+        ],
+        "articles/data-share/**/*.md": ["Azure", "Azure Data Share"],
+        "articles/data-share/**/*.yml": ["Azure", "Azure Data Share"],
+        "articles/hdinsight/**/*.md": ["Azure", "Azure HDInsight"],
+        "articles/hdinsight/**/*.yml": ["Azure", "Azure HDInsight"],
+        "articles/mariadb/**/*.md": ["Azure", "Azure Database for MariaDB"],
+        "articles/mariadb/**/*.yml": ["Azure", "Azure Database for MariaDB"],
+        "articles/mysql/**/*.md": ["Azure", "Azure Database for MySQL"],
+        "articles/mysql/**/*.yml": ["Azure", "Azure Database for MySQL"],
+        "articles/notebooks/**/*.yml": ["Azure", "Azure Notebooks"],
+        "articles/notebooks/**/*.md": ["Azure", "Azure Notebooks"],
+        "articles/postgresql/**.md": ["Azure", "Azure Database for PostgreSQL"],
+        "articles/postgresql/**.yml": [
+          "Azure",
+          "Azure Database for PostgreSQL"
+        ],
+        "articles/stream-analytics/**/*.md": ["Azure", "Stream Analytics"],
+        "articles/stream-analytics/**/*.yml": ["Azure", "Stream Analytics"],
+        "articles/virtual-machine-scale-sets/**/*.yml": [
+          "Azure",
+          "Virtual Machine Scale Sets"
+        ],
+        "articles/virtual-machines/**/*.yml": ["Azure", "Virtual Machines"],
+        "articles/virtual-machines/linux/**/*.yml": [
+          "Azure",
+          "Linux Virtual Machines"
+        ],
+        "articles/virtual-machines/windows/**/*.yml": [
+          "Azure",
+          "Windows Virtual Machines"
+        ],
+        "articles/virtual-machine-scale-sets/**/*.md": [
+          "Azure",
+          "Virtual Machine Scale Sets"
+        ],
+        "articles/virtual-machines/**/*.md": ["Azure", "Virtual Machines"],
+        "articles/virtual-machines/linux/**/*.md": [
+          "Azure",
+          "Linux Virtual Machines"
+        ],
+        "articles/virtual-machines/windows/**/*.md": [
+          "Azure",
+          "Windows Virtual Machines"
+        ]
       },
       "titleSuffix": {
+        "articles/test/*.md": "bar",
         "articles/service-health/**/*.md": "Azure Service Health",
         "articles/service-health/*.yml": "Azure Service Health",
         "articles/advisor/**/*.md": "Azure Advisor",
         "articles/advisor/*.yml": "Azure Advisor",
-        "articles/azure-monitor/**/*.yml" : "Azure Monitor",
-        "articles/azure-monitor/**/*.md" : "Azure Monitor",
+        "articles/azure-monitor/**/*.yml": "Azure Monitor",
+        "articles/azure-monitor/**/*.md": "Azure Monitor",
         "articles/connectors/*.md": "Azure Logic Apps",
         "articles/logic-apps/*.md": "Azure Logic Apps",
         "articles/scheduler/*.md": "Azure Scheduler",
@@ -681,12 +702,12 @@
         "articles/data-factory/**/*.yml": "Azure Data Factory",
         "articles/virtual-machines/windows/sql/**/*.md": "Azure SQL Server VM",
         "articles/virtual-machines/windows/sql/**/*.yml": "Azure SQL Server VM",
-        "articles/sql-database/**/*.md" : "Azure SQL Database",
-        "articles/sql-database/**/*.yml" : "Azure SQL Database",
-        "articles/ansible/**/*.yml" : "Ansible",
-        "articles/chef/**/*.yml" : "Chef",
-        "articles/jenkins/**/*.yml" : "Jenkins",
-        "articles/terraform/**/*.yml" : "Terraform",
+        "articles/sql-database/**/*.md": "Azure SQL Database",
+        "articles/sql-database/**/*.yml": "Azure SQL Database",
+        "articles/ansible/**/*.yml": "Ansible",
+        "articles/chef/**/*.yml": "Chef",
+        "articles/jenkins/**/*.yml": "Jenkins",
+        "articles/terraform/**/*.yml": "Terraform",
         "articles/azure-resource-manager/**/*.md": "Azure Resource Manager",
         "articles/azure-resource-manager/managed-applications/**/*.md": "Azure Managed Applications",
         "articles/azure-resource-manager/custom-providers/**/*.md": "Azure Custom Providers",
@@ -720,31 +741,17 @@
         "articles/aks/**/*.md": "Azure Kubernetes Service"
       },
       "featureFlags": {
-        "articles/**/*.md": [
-          "show_learn_banner"
-        ],
-        "articles/active-directory/**/*.md": [
-          "binaryRatingUpdate"
-        ]
+        "articles/**/*.md": ["show_learn_banner"],
+        "articles/active-directory/**/*.md": ["binaryRatingUpdate"]
       },
       "learn_banner_products": {
-        "articles/**/*.md": [
-          "azure"
-        ],
-        "articles/virtual-machines/**/*.md": [
-          "azure-virtual-machines"
-        ],
-        "articles/azure-portal/**/*.md": [
-          "azure-portal"
-        ],
-        "articles/azure-functions/**/*.md": [
-          "azure-functions"
-        ]
+        "articles/**/*.md": ["azure"],
+        "articles/virtual-machines/**/*.md": ["azure-virtual-machines"],
+        "articles/azure-portal/**/*.md": ["azure-portal"],
+        "articles/azure-functions/**/*.md": ["azure-functions"]
       }
     },
-    "template": [
-      "docs.html"
-    ],
+    "template": ["docs.html"],
     "dest": "azure"
   }
 }

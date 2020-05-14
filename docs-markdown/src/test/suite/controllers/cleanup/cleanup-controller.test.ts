@@ -1,4 +1,4 @@
-
+import * as assert from "assert";
 import * as chai from "chai";
 import * as spies from "chai-spies";
 import { resolve } from "path";
@@ -233,6 +233,24 @@ suite("Cleanup Controller", () => {
         await sleep(extendedSleepTime);
         stub.restore();
         expect(spy).to.have.been.called();
+    });
+    test("cleanup folder - single-valued metadata - recursive", async () => {
+        window.showQuickPick = (items: string[] | Thenable<string[]>) => {
+            return Promise.resolve({ label: "single-valued metadata", detail: "" }) as Thenable<any>;
+        };
+        await applyCleanupFolder(Uri.file(folderPath));
+        await sleep(extendedSleepTime);
+        const markdown = resolve(__dirname, "../../../../../../src/test/data/repo/articles/test/cleanup-test.md");
+        await loadDocumentAndGetItReady(markdown);
+        const actualText = window.activeTextEditor?.document.getText();
+        const expectedText =
+            "---\n" +
+            "ms.author: \"foo\"\n" +
+            "---\n";
+        // cleanup the modified *.md to prevent false positives for future tests.
+        const { exec } = require("child_process");
+        exec("cd " + __dirname + " && git checkout " + markdown);
+        assert.equal(expectedText, actualText);
     });
     test("cleanup folder - microsoft links", async () => {
         window.showQuickPick = (items: string[] | Thenable<string[]>) => {

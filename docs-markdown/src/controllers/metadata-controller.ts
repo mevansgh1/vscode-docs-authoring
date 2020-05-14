@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { commands, TextEditor, window, workspace } from "vscode";
-import { noActiveEditorMessage, tryFindFile } from "../helper/common";
+import { isMarkdownFileCheck, noActiveEditorMessage, toShortDate, tryFindFile } from "../helper/common";
 import { sendTelemetryData } from "../helper/telemetry";
 import { applyReplacements, findReplacement, Replacements } from "../helper/utility";
 
@@ -85,8 +85,7 @@ export async function updateImplicitMetadataValues() {
         return;
     }
 
-    if (editor.document.languageId !== "markdown" &&
-        editor.document.languageId !== "yaml") {
+    if (!isMarkdownFileCheck(editor, false)) {
         return;
     }
 
@@ -202,8 +201,7 @@ export async function updateMetadataDate() {
         return;
     }
 
-    if (editor.document.languageId !== "markdown" &&
-        editor.document.languageId !== "yaml") {
+    if (!isMarkdownFileCheck(editor, false)) {
         return;
     }
 
@@ -222,14 +220,4 @@ async function saveAndSendTelemetry() {
 
     const telemetryCommand = "updateMetadata";
     sendTelemetryData(telemetryCommand, updateMetadataDate.name);
-}
-
-function toShortDate(date: Date) {
-    const year = date.getFullYear();
-    const month = (1 + date.getMonth()).toString();
-    const monthStr = month.length > 1 ? month : `0${month}`;
-    const day = date.getDate().toString();
-    const dayStr = day.length > 1 ? day : `0${day}`;
-
-    return `${monthStr}/${dayStr}/${year}`;
 }
