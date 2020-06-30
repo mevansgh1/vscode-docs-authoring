@@ -43,7 +43,7 @@ suite('Metadata Helper', () => {
         window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
             return Promise.resolve('Update') as Thenable<any>;
         });
-		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata1.md');
+		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata2.md');
         await loadDocumentAndGetItReady(filePath);
         await metadataHelper.nag();
         assert.equal(stub.callCount, 1);
@@ -55,7 +55,7 @@ suite('Metadata Helper', () => {
         window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
             return Promise.resolve(undefined) as Thenable<any>;
         });
-		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata2.md');
+		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata3.md');
         await loadDocumentAndGetItReady(filePath);        
         await metadataHelper.nag();
         assert.equal(stub.callCount, 0);
@@ -91,7 +91,7 @@ suite('Metadata Helper', () => {
         window.showInformationMessage = (<T extends MessageItem>(message: string, ...items: T[]) => {
             return Promise.resolve(undefined) as Thenable<any>;
         });
-		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata3.md');
+		const filePath = resolve(__dirname, '../../../../../src/test/data/repo/articles/test/metadata4.md');
         await loadDocumentAndGetItReady(filePath);        
         await metadataHelper.nag();
         assert.equal(stub.callCount, 1);
